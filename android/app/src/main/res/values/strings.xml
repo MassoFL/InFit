@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">InFit</string>
+    <string name="title_activity_main">InFit</string>
+    <string name="package_name">com.infit.app</string>
+    <string name="custom_url_scheme">com.infit.app</string>
+</resources>
