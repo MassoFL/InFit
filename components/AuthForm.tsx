@@ -12,12 +12,24 @@ export default function AuthForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createSupabaseClient()
+  
+  let supabase: any = null
+  try {
+    supabase = createSupabaseClient()
+  } catch (err) {
+    // Handle missing Supabase configuration
+  }
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
+
+    if (!supabase) {
+      setError('Configuration Supabase manquante. Veuillez vérifier les variables d\'environnement.')
+      setLoading(false)
+      return
+    }
 
     try {
       if (isSignUp) {

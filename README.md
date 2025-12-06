@@ -25,12 +25,14 @@ npm install
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to Project Settings > API
 3. Copy your project URL and anon key
-4. Update `.env.local` with your credentials:
+4. Create `.env.local` file (copy from `.env.example`):
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+**For deployment:** Make sure to set these environment variables in your deployment platform (Vercel, Netlify, etc.)
 
 ### 3. Create Database Tables
 
