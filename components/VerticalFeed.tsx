@@ -185,30 +185,30 @@ export default function VerticalFeed({ outfits, currentUserId }: VerticalFeedPro
         scrollSnapType: 'none',
         overscrollBehavior: 'none',
         WebkitOverflowScrolling: 'auto',
-        scrollBehavior: 'auto'
+        scrollBehavior: 'auto',
+        touchAction: 'none'
       }}
     >
       <div
         className="transition-transform duration-500 ease-out"
         style={{
           transform: `translateY(-${currentIndex * 100}vh)`,
+          touchAction: 'none'
         }}
       >
-        {outfits.map((outfit, index) => (
+        {outfits.map((outfit) => (
           <div
             key={outfit.id}
-            className="h-screen flex items-center justify-center p-4"
+            className="h-screen w-screen"
             style={{ scrollSnapAlign: 'start' }}
           >
-            <div className="w-full max-w-2xl">
-              <OutfitCard
-                outfit={outfit}
-                currentUserId={currentUserId}
-                isSaved={outfit.is_saved}
-                savesCount={outfit.saves_count}
-                isFollowing={outfit.is_following}
-              />
-            </div>
+            <OutfitCard
+              outfit={outfit}
+              currentUserId={currentUserId}
+              isSaved={outfit.is_saved}
+              savesCount={outfit.saves_count}
+              isFollowing={outfit.is_following}
+            />
           </div>
         ))}
       </div>
