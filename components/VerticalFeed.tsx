@@ -180,8 +180,9 @@ export default function VerticalFeed({ outfits, currentUserId }: VerticalFeedPro
   return (
     <div
       ref={containerRef}
-      className="relative h-screen overflow-hidden"
+      className="relative overflow-hidden"
       style={{ 
+        height: '100dvh',
         scrollSnapType: 'none',
         overscrollBehavior: 'none',
         WebkitOverflowScrolling: 'auto',
@@ -192,15 +193,15 @@ export default function VerticalFeed({ outfits, currentUserId }: VerticalFeedPro
       <div
         className="transition-transform duration-500 ease-out"
         style={{
-          transform: `translateY(-${currentIndex * 100}vh)`,
+          transform: `translateY(-${currentIndex * 100}dvh)`,
           touchAction: 'none'
         }}
       >
         {outfits.map((outfit) => (
           <div
             key={outfit.id}
-            className="h-screen w-screen"
-            style={{ scrollSnapAlign: 'start' }}
+            className="w-screen"
+            style={{ height: '100dvh', scrollSnapAlign: 'start' }}
           >
             <OutfitCard
               outfit={outfit}

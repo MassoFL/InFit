@@ -134,7 +134,7 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden" style={{ touchAction: 'none' }}>
+    <div className="relative w-full h-full overflow-hidden" style={{ touchAction: 'none', height: '100dvh' }}>
       {/* Image principale - plein écran */}
       <div className="absolute inset-0 bg-white" style={{ touchAction: 'none' }}>
         <img
@@ -161,7 +161,7 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
       </div>
       
       {/* Overlay avec infos de base - en bas */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 pb-8 z-10">
+      <div className="absolute bottom-0 left-0 right-0 p-6 z-10" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
@@ -200,7 +200,7 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
       </div>
       
       {/* Actions - côté droit */}
-      <div className="absolute right-4 bottom-32 flex flex-col gap-6 z-10">
+      <div className="absolute right-4 flex flex-col gap-6 z-10" style={{ bottom: 'max(8rem, calc(8rem + env(safe-area-inset-bottom)))' }}>
         <button
           onClick={toggleLike}
           className="flex flex-col items-center hover:scale-110 transition-transform"
