@@ -63,28 +63,27 @@ export default function FeedPageClient({ followingOutfits, allOutfits, currentUs
         </div>
       </nav>
 
-      {/* Fixed Tabs - S'agrandit aussi au clic */}
+      {/* Fixed Tabs - Taille fixe, fond transparent */}
       <div 
-        onClick={toggleNav}
-        className={`fixed left-0 right-0 z-40 transition-all duration-300 cursor-pointer ${
-          isNavExpanded ? 'top-16' : 'top-8'
-        }`}
+        className="fixed left-0 right-0 z-40 pointer-events-none"
+        style={{ 
+          top: 'max(3.5rem, calc(3.5rem + env(safe-area-inset-top)))'
+        }}
       >
-        <div className={`flex gap-6 justify-center transition-all duration-300 ${
-          isNavExpanded ? 'py-3' : 'py-1'
-        }`}>
+        <div className="flex gap-6 justify-center py-3 pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation()
               setActiveTab('following')
             }}
-            className={`px-4 transition-all duration-300 ${
-              isNavExpanded ? 'text-base pb-2' : 'text-xs pb-1'
-            } ${
+            className={`px-4 text-base pb-2 transition-all duration-200 ${
               activeTab === 'following'
-                ? 'border-b-2 border-white font-semibold text-white drop-shadow-lg'
-                : 'text-white/70 hover:text-white drop-shadow-lg'
+                ? 'border-b-2 border-white font-semibold text-white'
+                : 'text-white/70 hover:text-white'
             }`}
+            style={{
+              textShadow: '0 0 8px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.8)'
+            }}
           >
             Abonnements
           </button>
@@ -93,13 +92,14 @@ export default function FeedPageClient({ followingOutfits, allOutfits, currentUs
               e.stopPropagation()
               setActiveTab('for-you')
             }}
-            className={`px-4 transition-all duration-300 ${
-              isNavExpanded ? 'text-base pb-2' : 'text-xs pb-1'
-            } ${
+            className={`px-4 text-base pb-2 transition-all duration-200 ${
               activeTab === 'for-you'
-                ? 'border-b-2 border-white font-semibold text-white drop-shadow-lg'
-                : 'text-white/70 hover:text-white drop-shadow-lg'
+                ? 'border-b-2 border-white font-semibold text-white'
+                : 'text-white/70 hover:text-white'
             }`}
+            style={{
+              textShadow: '0 0 8px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.8)'
+            }}
           >
             Pour Toi
           </button>
@@ -116,11 +116,7 @@ export default function FeedPageClient({ followingOutfits, allOutfits, currentUs
       </Link>
 
       {/* Vertical Feed */}
-      <div className={`transition-all duration-300 ${
-        isNavExpanded ? 'pt-28' : 'pt-16'
-      }`}>
-        <VerticalFeed outfits={outfitsToShow} currentUserId={currentUserId} />
-      </div>
+      <VerticalFeed outfits={outfitsToShow} currentUserId={currentUserId} />
     </main>
   )
 }
