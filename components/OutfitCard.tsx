@@ -135,12 +135,22 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
 
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ touchAction: 'none', height: '100dvh' }}>
+      {/* Background blur effect - artistic fill for margins */}
+      <div className="absolute inset-0 overflow-hidden">
+        <img
+          src={allImages[currentImageIndex]}
+          alt="Background blur"
+          className="w-full h-full object-cover scale-110 blur-3xl opacity-60"
+          draggable="false"
+        />
+      </div>
+      
       {/* Image principale - plein écran */}
-      <div className="absolute inset-0 bg-white" style={{ touchAction: 'none' }}>
+      <div className="absolute inset-0" style={{ touchAction: 'none' }}>
         <img
           src={allImages[currentImageIndex]}
           alt="Outfit"
-          className="w-full h-full object-contain pointer-events-none select-none"
+          className="w-full h-full object-contain pointer-events-none select-none relative z-[1]"
           draggable="false"
         />
         
