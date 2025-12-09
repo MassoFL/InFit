@@ -41,6 +41,10 @@ export interface Outfit {
   is_saved?: boolean
   saves_count?: number
   is_following?: boolean
+  reposts_count?: number
+  is_reposted?: boolean
+  reposted_by?: User
+  original_user?: User
 }
 
 export interface Follow {

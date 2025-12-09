@@ -15,6 +15,7 @@ interface FeedPageClientProps {
 export default function FeedPageClient({ followingOutfits, allOutfits, currentUserId }: FeedPageClientProps) {
   const [activeTab, setActiveTab] = useState<'following' | 'for-you'>('for-you')
   const [isNavExpanded, setIsNavExpanded] = useState(false)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
   const outfitsToShow = activeTab === 'following' ? followingOutfits : allOutfits
   
@@ -22,6 +23,20 @@ export default function FeedPageClient({ followingOutfits, allOutfits, currentUs
   const toggleNav = () => {
     setIsNavExpanded(!isNavExpanded)
   }
+  
+  // Écouter les événements d'ouverture/fermeture des détails
+  useEffect(() => {
+    const handleDetailsOpen = () => setIsDetailsOpen(true)
+    const handleDetailsClose = () => setIsDetailsOpen(false)
+    
+    window.addEventListener('outfitDetailsOpen', handleDetailsOpen)
+    window.addEventListener('outfitDetailsClose', handleDetailsClose)
+    
+    return () => {
+      window.removeEventListener('outfitDetailsOpen', handleDetailsOpen)
+      window.removeEventListener('outfitDetailsClose', handleDetailsClose)
+    }
+  }, [])
   
   // Détecter le scroll pour réduire la nav
   useEffect(() => {
@@ -63,14 +78,15 @@ export default function FeedPageClient({ followingOutfits, allOutfits, currentUs
         </div>
       </nav>
 
-      {/* Fixed Tabs - Taille fixe, fond transparent */}
-      <div 
-        className="fixed left-0 right-0 z-40 pointer-events-none"
-        style={{ 
-          top: 'max(3.5rem, calc(3.5rem + env(safe-area-inset-top)))'
-        }}
-      >
-        <div className="flex gap-6 justify-center py-3 pointer-events-auto">
+      {/* Fixed Tabs - Taille fixe, fond transparent - Cachés quand détails ouverts */}
+      {!isDetailsOpen && (
+        <div 
+          className="fixed left-0 right-0 z-40 pointer-events-none transition-opacity duration-300"
+          style={{ 
+            top: 'max(3.5rem, calc(3.5rem + env(safe-area-inset-top)))'
+          }}
+        >
+          <div className="flex gap-6 justify-center py-3 pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -104,7 +120,8 @@ export default function FeedPageClient({ followingOutfits, allOutfits, currentUs
             Pour Toi
           </button>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Fixed Add Button */}
       <Link href="/create">

@@ -56,6 +56,14 @@ export default async function FeedPage() {
 
   const savedOutfitIds = new Set(userSaves?.map((s: any) => s.outfit_id) || [])
 
+  // Check which outfits current user has reposted
+  const { data: userReposts } = await supabase
+    .from('reposts')
+    .select('outfit_id')
+    .eq('user_id', session.user.id)
+
+  const repostedOutfitIds = new Set(userReposts?.map((r: any) => r.outfit_id) || [])
+
   // Check which users current user is following
   const { data: userFollows } = await supabase
     .from('follows')
@@ -84,6 +92,16 @@ export default async function FeedPage() {
     savesMap.set(save.outfit_id, (savesMap.get(save.outfit_id) || 0) + 1)
   })
 
+  // Get reposts count for each outfit
+  const { data: repostsCount } = await supabase
+    .from('reposts')
+    .select('outfit_id')
+
+  const repostsMap = new Map()
+  repostsCount?.forEach((repost: any) => {
+    repostsMap.set(repost.outfit_id, (repostsMap.get(repost.outfit_id) || 0) + 1)
+  })
+
   const outfitsWithLikes = outfits?.map((outfit: any) => ({
     ...outfit,
     user: outfit.profiles,
@@ -91,6 +109,8 @@ export default async function FeedPage() {
     is_liked: likedOutfitIds.has(outfit.id),
     is_saved: savedOutfitIds.has(outfit.id),
     saves_count: savesMap.get(outfit.id) || 0,
+    is_reposted: repostedOutfitIds.has(outfit.id),
+    reposts_count: repostsMap.get(outfit.id) || 0,
     is_following: followingIds.has(outfit.user_id)
   })) || []
 

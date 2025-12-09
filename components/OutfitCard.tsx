@@ -5,12 +5,14 @@ import { createSupabaseClient } from '@/lib/supabase'
 import { useState } from 'react'
 import Link from 'next/link'
 
-export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSaved, savesCount: initialSavesCount, isFollowing: initialIsFollowing }: { outfit: Outfit; currentUserId?: string; isSaved?: boolean; savesCount?: number; isFollowing?: boolean }) {
+export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSaved, savesCount: initialSavesCount, isFollowing: initialIsFollowing, isReposted: initialIsReposted, repostsCount: initialRepostsCount }: { outfit: Outfit; currentUserId?: string; isSaved?: boolean; savesCount?: number; isFollowing?: boolean; isReposted?: boolean; repostsCount?: number }) {
   const [isLiked, setIsLiked] = useState(outfit.is_liked || false)
   const [likesCount, setLikesCount] = useState(outfit.likes_count || 0)
   const [isSaved, setIsSaved] = useState(initialIsSaved || false)
   const [savesCount, setSavesCount] = useState(initialSavesCount || 0)
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing || false)
+  const [isReposted, setIsReposted] = useState(initialIsReposted || false)
+  const [repostsCount, setRepostsCount] = useState(initialRepostsCount || 0)
   const [showDetails, setShowDetails] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [description, setDescription] = useState(outfit.description || '')
@@ -36,10 +38,12 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
     // Swipe left to open details (horizontal swipe > 50px and vertical < 30px)
     if (diffX > 50 && diffY < 30) {
       setShowDetails(true)
+      window.dispatchEvent(new Event('outfitDetailsOpen'))
     }
     // Swipe right to close details
     else if (diffX < -50 && diffY < 30 && showDetails) {
       setShowDetails(false)
+      window.dispatchEvent(new Event('outfitDetailsClose'))
     }
   }
   
@@ -100,6 +104,29 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
       setIsSaved(!isSaved)
     } catch (err) {
       console.error('Error toggling save:', err)
+    }
+  }
+
+  const toggleRepost = async () => {
+    if (!currentUserId) return
+
+    try {
+      if (isReposted) {
+        await supabase
+          .from('reposts')
+          .delete()
+          .eq('user_id', currentUserId)
+          .eq('outfit_id', outfit.id)
+        setRepostsCount(prev => prev - 1)
+      } else {
+        await supabase
+          .from('reposts')
+          .insert({ user_id: currentUserId, outfit_id: outfit.id })
+        setRepostsCount(prev => prev + 1)
+      }
+      setIsReposted(!isReposted)
+    } catch (err) {
+      console.error('Error toggling repost:', err)
     }
   }
 
@@ -174,14 +201,18 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
         />
       </div>
       
-      {/* Image principale - plein écran */}
-      <div className="absolute inset-0">
-        <img
-          src={allImages[currentImageIndex]}
-          alt="Outfit"
-          className="w-full h-full object-contain pointer-events-none select-none relative z-[1]"
-          draggable="false"
-        />
+      {/* Image principale - plein écran avec effet de couture */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="relative max-w-full max-h-full">
+          <img
+            src={allImages[currentImageIndex]}
+            alt="Outfit"
+            className="max-w-full max-h-[100dvh] object-contain pointer-events-none select-none"
+            draggable="false"
+          />
+          
+
+        </div>
         
         {/* Indicateurs d'images */}
         {allImages.length > 1 && (
@@ -202,23 +233,33 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
       {/* Overlay avec infos de base - en bas */}
       <div className="absolute bottom-0 left-0 right-0 p-6 z-10" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
         <div className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <Link href={`/user/${outfit.user?.username}`} className="text-xl font-bold text-white hover:underline drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                @{outfit.user?.username}
-              </Link>
-              {!isOwner && (
-                <button
-                  onClick={toggleFollow}
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    isFollowing 
-                      ? 'bg-white/20 text-white backdrop-blur-sm' 
-                      : 'bg-white text-black'
-                  }`}
-                >
-                  {isFollowing ? 'Abonné' : 'S\'abonner'}
-                </button>
-              )}
+          <div className="mb-3">
+            {outfit.reposted_by && (
+              <div className="text-white/70 text-xs mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                <svg className="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16"/>
+                </svg>
+                Republié par @{outfit.reposted_by.username}
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Link href={`/user/${outfit.original_user?.username || outfit.user?.username}`} className="text-xl font-bold text-white hover:underline drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                  @{outfit.original_user?.username || outfit.user?.username}
+                </Link>
+                {!isOwner && (
+                  <button
+                    onClick={toggleFollow}
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      isFollowing 
+                        ? 'bg-white/20 text-white backdrop-blur-sm' 
+                        : 'bg-white text-black'
+                    }`}
+                  >
+                    {isFollowing ? 'Abonné' : 'S\'abonner'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           
@@ -283,6 +324,29 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
             }}
           >
             {savesCount}
+          </span>
+        </button>
+        
+        <button
+          onClick={toggleRepost}
+          className="flex flex-col items-center hover:scale-110 transition-transform"
+        >
+          {isReposted ? (
+            <svg className="w-8 h-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" fill="#ffffff" viewBox="0 0 24 24">
+              <path d="M6 6v2h8.59L5 17.59 6.41 19 16 9.41V18h2V6z"/>
+            </svg>
+          ) : (
+            <svg className="w-8 h-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" fill="none" stroke="#ffffff" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16"/>
+            </svg>
+          )}
+          <span 
+            className="text-white text-sm font-medium mt-1"
+            style={{
+              textShadow: '0 0 4px rgba(0,0,0,0.9), 0 2px 6px rgba(0,0,0,0.7)'
+            }}
+          >
+            {repostsCount}
           </span>
         </button>
       </div>

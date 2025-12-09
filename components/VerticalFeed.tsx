@@ -209,6 +209,8 @@ export default function VerticalFeed({ outfits, currentUserId }: VerticalFeedPro
               isSaved={outfit.is_saved}
               savesCount={outfit.saves_count}
               isFollowing={outfit.is_following}
+              isReposted={outfit.is_reposted}
+              repostsCount={outfit.reposts_count}
             />
           </div>
         ))}
