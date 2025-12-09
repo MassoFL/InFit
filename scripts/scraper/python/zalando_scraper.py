@@ -15,8 +15,15 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 from urllib.parse import urljoin
 
-# Load environment variables
-load_dotenv('.env.local')
+# Load environment variables from project root
+import os
+from pathlib import Path
+
+# Get project root (3 levels up from this file)
+project_root = Path(__file__).parent.parent.parent.parent
+env_path = project_root / '.env.local'
+
+load_dotenv(env_path)
 
 class ZalandoScraper:
     def __init__(self):
@@ -123,8 +130,10 @@ class ZalandoScraper:
                 print(f"   - {key}: {value}")
         
         try:
-            response = self.session.get(url, timeout=30)
+            print(f"⏳ Fetching page...")
+            response = self.session.get(url, timeout=60)
             response.raise_for_status()
+            print(f"✅ Page loaded ({len(response.content)} bytes)")
             
             soup = BeautifulSoup(response.content, 'lxml')
             
