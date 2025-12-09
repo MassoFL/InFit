@@ -10,7 +10,9 @@
     "cap:ios": "npx cap open ios",
     "cap:android": "npx cap open android",
     "scrape": "tsx scripts/scraper/index.ts",
-    "scrape:dry": "tsx scripts/scraper/index.ts --dry-run"
+    "scrape:dry": "tsx scripts/scraper/index.ts --dry-run",
+    "scrape:zalando": "cd scripts/scraper/python && python3 zalando_scraper.py",
+    "scrape:zalando:dry": "cd scripts/scraper/python && python3 zalando_scraper.py --dry-run"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",
@@ -23,6 +25,7 @@
     "dotenv": "^17.2.3",
     "next": "^16.0.7",
     "next-pwa": "^5.6.0",
+    "puppeteer": "^24.32.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "tsx": "^4.21.0"

@@ -17,6 +17,8 @@ config({ path: resolve(process.cwd(), '.env.local') })
 
 import { MERCHANTS } from './config'
 import { PostCreator } from './utils/post-creator'
+import { ZaraScraper } from './scrapers/zara-scraper'
+import { MockScraper } from './scrapers/mock-scraper'
 
 interface ScraperOptions {
   merchant?: string
@@ -62,43 +64,40 @@ async function main() {
     await postCreator.initBotUser()
     console.log('✅ Compte bot prêt')
 
-    // TODO: Implémenter les scrapers spécifiques
-    console.log('\n⚠️  Les scrapers spécifiques ne sont pas encore implémentés')
-    console.log('📝 Prochaines étapes:')
-    console.log('   1. Installer Puppeteer: npm install puppeteer')
-    console.log('   2. Implémenter les scrapers dans scripts/scraper/scrapers/')
-    console.log('   3. Ou utiliser les APIs officielles des marchands')
-    console.log('\n💡 Recommandation: Utiliser les APIs d\'affiliation officielles')
-    console.log('   - ASOS Partner API')
-    console.log('   - Zalando Partner Program')
-    console.log('   - Amazon Product Advertising API')
+    // Détermine quel scraper utiliser
+    const merchant = options.merchant || 'mock'
+    const category = options.category || 'man'
 
-    // Exemple de données mockées pour tester
-    if (options.dryRun) {
-      const mockProducts = [
-        {
-          name: 'T-shirt basique blanc',
-          brand: 'Zara',
-          price: '12.99€',
-          imageUrl: 'https://via.placeholder.com/800x1200',
-          productUrl: 'https://www.zara.com/example',
-          sizes: ['S', 'M', 'L', 'XL'],
-          description: 'T-shirt en coton 100% biologique',
-          category: 'T-shirts'
-        },
-        {
-          name: 'Jean slim noir',
-          brand: 'H&M',
-          price: '29.99€',
-          imageUrl: 'https://via.placeholder.com/800x1200',
-          productUrl: 'https://www2.hm.com/example',
-          sizes: ['28', '30', '32', '34'],
-          description: 'Jean slim fit en denim stretch',
-          category: 'Jeans'
-        }
-      ]
+    let products = []
 
-      await postCreator.createPosts(mockProducts, true)
+    if (merchant === 'mock') {
+      console.log('\n🎭 Utilisation du Mock Scraper (données de démonstration)...')
+      const scraper = new MockScraper()
+      products = await scraper.scrapeCategory(category, options.limit)
+    } else if (merchant === 'zara') {
+      console.log('\n🛍️  Scraping Zara (peut échouer si le site a changé)...')
+      const scraper = new ZaraScraper()
+      
+      try {
+        products = await scraper.scrapeCategory(category, options.limit)
+        await scraper.close()
+      } catch (error) {
+        console.error('❌ Erreur scraping:', error)
+        await scraper.close()
+      }
+    } else {
+      console.log(`\n⚠️  Scraper pour ${merchant} pas encore implémenté`)
+      console.log('📝 Marchands disponibles: mock, zara')
+      console.log('\n💡 Recommandation:')
+      console.log('   - Utiliser --merchant=mock pour tester')
+      console.log('   - Utiliser les APIs officielles pour la production')
+    }
+
+    // Crée les posts
+    if (products.length > 0) {
+      await postCreator.createPosts(products, options.dryRun)
+    } else {
+      console.log('\n⚠️  Aucun produit trouvé')
     }
 
   } catch (error) {
