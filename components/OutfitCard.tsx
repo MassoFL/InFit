@@ -15,9 +15,33 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
   const [isEditing, setIsEditing] = useState(false)
   const [description, setDescription] = useState(outfit.description || '')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [touchStartX, setTouchStartX] = useState(0)
+  const [touchStartY, setTouchStartY] = useState(0)
   const supabase = createSupabaseClient()
   
   const isOwner = currentUserId === outfit.user_id
+  
+  // Handle horizontal swipe to open details
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX)
+    setTouchStartY(e.touches[0].clientY)
+  }
+  
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX
+    const touchEndY = e.changedTouches[0].clientY
+    const diffX = touchStartX - touchEndX
+    const diffY = Math.abs(touchStartY - touchEndY)
+    
+    // Swipe left to open details (horizontal swipe > 50px and vertical < 30px)
+    if (diffX > 50 && diffY < 30) {
+      setShowDetails(true)
+    }
+    // Swipe right to close details
+    else if (diffX < -50 && diffY < 30 && showDetails) {
+      setShowDetails(false)
+    }
+  }
   
   // Combine main image with additional images
   const allImages = [
@@ -134,7 +158,12 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden" style={{ touchAction: 'none', height: '100dvh' }}>
+    <div 
+      className="relative w-full h-full overflow-hidden" 
+      style={{ touchAction: 'pan-y', height: '100dvh' }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Background blur effect - artistic fill for margins */}
       <div className="absolute inset-0 overflow-hidden">
         <img
@@ -146,7 +175,7 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
       </div>
       
       {/* Image principale - plein écran */}
-      <div className="absolute inset-0" style={{ touchAction: 'none' }}>
+      <div className="absolute inset-0">
         <img
           src={allImages[currentImageIndex]}
           alt="Outfit"
@@ -392,16 +421,35 @@ export default function OutfitCard({ outfit, currentUserId, isSaved: initialIsSa
         </div>
       </div>
       
-      {/* Bouton pour ouvrir le panneau - visible quand fermé */}
+      {/* Indicateur animé pour swiper - visible quand fermé */}
       {!showDetails && (
-        <button
-          onClick={() => setShowDetails(true)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all z-10"
-        >
-          <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M15 19l-7-7 7-7"/>
-          </svg>
-        </button>
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex gap-1.5 items-center pointer-events-none">
+          {[0, 1, 2, 3].map((index) => {
+            // Tailles: 0.5rem, 0.65rem, 0.8rem, 1.2rem (la dernière plus grande)
+            const sizes = [0.5, 0.65, 0.8, 1.2];
+            const size = sizes[index];
+            return (
+              <svg 
+                key={index}
+                className="text-white animate-pulse" 
+                style={{ 
+                  width: `${size}rem`,
+                  height: `${size}rem`,
+                  animationDelay: `${index * 150}ms`, 
+                  animationDuration: '2s',
+                  opacity: 0.3 + (index * 0.2),
+                  filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5)) drop-shadow(0 1px 3px rgba(0,0,0,0.4))'
+                }}
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                viewBox="0 0 24 24"
+              >
+                <path d="M15 19l-7-7 7-7"/>
+              </svg>
+            );
+          })}
+        </div>
       )}
     </div>
   )
