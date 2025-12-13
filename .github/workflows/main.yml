@@ -1,0 +1,64 @@
+name: Daily Zalando Scrape
+
+on:
+  schedule:
+    # Tous les jours à 9h00 UTC (10h00 Paris en hiver, 11h00 en été)
+    - cron: '0 9 * * *'
+  # Permet de lancer manuellement
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Nombre de produits à scraper'
+        required: false
+        default: '10'
+      dry_run:
+        description: 'Mode test (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install Chrome
+      run: |
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+    
+    - name: Install Python dependencies
+      run: |
+        cd scripts/scraper/python
+        pip install -r requirements.txt
+    
+    - name: Run scraper
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      run: |
+        cd scripts/scraper/python
+        python zalando_selenium.py \
+          --url "https://www.zalando.fr/mode-femme/?activation_date=0-7&price_to=50&order=sale" \
+          --limit ${{ github.event.inputs.limit || '10' }} \
+          ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
+    
+    - name: Scrape men's fashion
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      run: |
+        cd scripts/scraper/python
+        python zalando_selenium.py \
+          --url "https://www.zalando.fr/mode-homme/?activation_date=0-7&price_to=50&order=sale" \
+          --limit 5 \
+          ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
